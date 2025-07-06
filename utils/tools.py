@@ -1,5 +1,7 @@
 import numpy as np
-import torch
+import mindspore as ms
+import mindspore.ops as ops
+from mindspore import Tensor
 
 def adjust_learning_rate(optimizer, epoch, args):
     # lr = args.learning_rate * (0.2 ** (epoch // 2))
@@ -44,7 +46,7 @@ class EarlyStopping:
     def save_checkpoint(self, val_loss, model, path):
         if self.verbose:
             print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
-        torch.save(model.state_dict(), path+'/'+'checkpoint.pth')
+        ms.save_checkpoint(model, path+'/'+'checkpoint.ckpt')
         self.val_loss_min = val_loss
 
 class dotdict(dict):
@@ -63,13 +65,21 @@ class StandardScaler():
         self.std = data.std(0)
 
     def transform(self, data):
-        mean = torch.from_numpy(self.mean).type_as(data).to(data.device) if torch.is_tensor(data) else self.mean
-        std = torch.from_numpy(self.std).type_as(data).to(data.device) if torch.is_tensor(data) else self.std
+        if isinstance(data, Tensor):
+            mean = Tensor(self.mean).astype(data.dtype)
+            std = Tensor(self.std).astype(data.dtype)
+        else:
+            mean = self.mean
+            std = self.std
         return (data - mean) / std
 
     def inverse_transform(self, data):
-        mean = torch.from_numpy(self.mean).type_as(data).to(data.device) if torch.is_tensor(data) else self.mean
-        std = torch.from_numpy(self.std).type_as(data).to(data.device) if torch.is_tensor(data) else self.std
+        if isinstance(data, Tensor):
+            mean = Tensor(self.mean).astype(data.dtype)
+            std = Tensor(self.std).astype(data.dtype)
+        else:
+            mean = self.mean
+            std = self.std
         if data.shape[-1] != mean.shape[-1]:
             mean = mean[-1:]
             std = std[-1:]

@@ -1,6 +1,8 @@
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+import mindspore as ms
+import mindspore.nn as nn
+import mindspore.ops as ops
+from mindspore import Tensor, Parameter
+from mindspore.common.initializer import initializer, Normal, XavierNormal
 
 import math
 

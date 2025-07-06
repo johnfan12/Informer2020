@@ -1,6 +1,7 @@
 import argparse
 import os
-import torch
+import mindspore as ms
+import mindspore.context as context
 
 from exp.exp_informer import Exp_Informer
 
@@ -60,7 +61,7 @@ parser.add_argument('--devices', type=str, default='0,1,2,3',help='device ids of
 
 args = parser.parse_args()
 
-args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
+args.use_gpu = True if ms.context.get_context("device_target") == "GPU" and args.use_gpu else False
 
 if args.use_gpu and args.use_multi_gpu:
     args.devices = args.devices.replace(' ','')
@@ -110,4 +111,5 @@ for ii in range(args.itr):
         print('>>>>>>>predicting : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
         exp.predict(setting, True)
 
-    torch.cuda.empty_cache()
+    # MindSpore内存管理自动优化，不需要手动清理
+    pass
